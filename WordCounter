@@ -1,0 +1,62 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class WordCounter {
+
+    /**
+     * Точка входу програми.
+     * Очікує один аргумент: шлях до файлу.
+     *
+     * @param args аргументи командного рядка
+     */
+    public static void main(String[] args) {
+        if (args == null || args.length != 1) {
+            throw new IllegalArgumentException("Необхідно передати один аргумент: шлях до файлу.");
+        }
+
+        String filename = args[0];
+        try {
+            long count = numberOfWords(filename);
+            System.out.println("Кількість слів у файлі \"" + filename + "\": " + count);
+        } catch (IOException e) {
+            System.err.println("Помилка при обробці файлу: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Підраховує кількість слів у файлі.
+     * Словами вважаються непорожні послідовності символів, розділені пробілами або новими рядками.
+     *
+     * @param filename шлях до файлу
+     * @return кількість слів у файлі
+     * @throws IllegalArgumentException якщо filename є null або порожнім
+     * @throws IOException              якщо виникла помилка вводу-виводу
+     */
+    public static long numberOfWords(String filename) throws IOException {
+        if (filename == null) {
+            throw new NullPointerException("Ім'я файлу не може бути null.");
+        }
+        if (filename.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ім'я файлу не може бути порожнім.");
+        }
+
+        long wordCount = 0;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            // Регулярний вираз для розділення по пробілах та нових рядках
+            while ((line = reader.readLine()) != null) {
+                String[] words = line.trim().split("\\s+");
+                for (String word : words) {
+                    if (!word.isEmpty()) {
+                        wordCount++;
+                    }
+                }
+            }
+        }
+
+        return wordCount;
+    }
+}
