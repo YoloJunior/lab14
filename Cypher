@@ -1,0 +1,68 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class FileCypher {
+
+    /**
+     * Точка входу програми.
+     * Очікує три аргументи: шлях до вихідного файлу, шлях до цільового файлу та ключ шифрування.
+     *
+     * @param args аргументи командного рядка
+     */
+    public static void main(String[] args) {
+        if (args == null || args.length != 3) {
+            throw new IllegalArgumentException("Необхідно передати три аргументи: вихідний файл, цільовий файл, ключ.");
+        }
+
+        String source = args[0];
+        String destination = args[1];
+        String keyArg = args[2];
+        byte key;
+
+        try {
+            key = Byte.parseByte(keyArg);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Ключ повинен бути числом від -128 до 127.", e);
+        }
+
+        try {
+            cypher(source, destination, key);
+            System.out.println("Файл успішно зашифровано та збережено у \"" + destination + "\".");
+        } catch (IOException e) {
+            System.err.println("Помилка при шифруванні файлу: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Створює зашифровану копію файлу, замінюючи кожен байт сумою за модулем 2 (XOR) його значення та ключа.
+     *
+     * @param source      шлях до вихідного файлу
+     * @param destination шлях до цільового файлу
+     * @param key         ключ шифрування
+     * @throws IllegalArgumentException якщо будь-який з аргументів є null або порожнім
+     * @throws IOException              якщо виникла помилка вводу-виводу
+     */
+    public static void cypher(String source, String destination, byte key) throws IOException {
+        if (source == null || destination == null) {
+            throw new NullPointerException("Шляхи до файлів не можуть бути null.");
+        }
+        if (source.trim().isEmpty() || destination.trim().isEmpty()) {
+            throw new IllegalArgumentException("Шляхи до файлів не можуть бути порожніми.");
+        }
+
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
+             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destination))) {
+
+            int byteRead;
+            while ((byteRead = bis.read()) != -1) {
+                byte encryptedByte = (byte) (byteRead ^ key);
+                bos.write(encryptedByte);
+            }
+            bos.flush();
+        }
+    }
+}
