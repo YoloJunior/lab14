@@ -1,0 +1,104 @@
+
+import java.io.IOException;
+
+public class Main {
+
+    /**
+     * Точка входу програми.
+     * Використання:
+     * Для підрахунку слів:
+     *   java Main countWords <filename>
+     * Для шифрування файлу:
+     *   java Main cypher <sourceFile> <destinationFile> <key>
+     *
+     * @param args аргументи командного рядка
+     */
+    public static void main(String[] args) {
+        System.out.println("Поточна робоча директорія: " + System.getProperty("user.dir"));
+        if (args == null || args.length == 0) {
+            printUsageAndExit("Не було передано жодних аргументів.");
+        }
+
+        String command = args[0].toLowerCase();
+
+        try {
+            switch (command) {
+                case "countwords":
+                    handleCountWords(args);
+                    break;
+                case "cypher":
+                    handleCypher(args);
+                    break;
+                default:
+                    printUsageAndExit("Невідома команда: " + command);
+            }
+        } catch (IllegalArgumentException | NullPointerException e) {
+            System.err.println("Помилка аргументів: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        } catch (IOException e) {
+            System.err.println("Помилка вводу-виводу: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
+        }
+    }
+
+    /**
+     * Обробляє команду підрахунку слів.
+     *
+     * @param args аргументи командного рядка
+     * @throws IllegalArgumentException якщо аргументи некоректні
+     * @throws IOException              якщо виникла помилка вводу-виводу
+     */
+    private static void handleCountWords(String[] args) throws IOException {
+        if (args.length != 2) {
+            printUsageAndExit("Команда 'countWords' потребує один аргумент: <filename>");
+        }
+
+        String filename = args[1];
+        long wordCount = WordCounter.numberOfWords(filename);
+        System.out.println("Кількість слів у файлі \"" + filename + "\": " + wordCount);
+    }
+
+    /**
+     * Обробляє команду шифрування файлу.
+     *
+     * @param args аргументи командного рядка
+     * @throws IllegalArgumentException якщо аргументи некоректні
+     * @throws IOException              якщо виникла помилка вводу-виводу
+     */
+    private static void handleCypher(String[] args) throws IOException {
+        if (args.length != 4) {
+            printUsageAndExit("Команда 'cypher' потребує три аргументи: <sourceFile> <destinationFile> <key>");
+        }
+
+        String source = args[1];
+        String destination = args[2];
+        String keyArg = args[3];
+        byte key;
+
+        try {
+            key = Byte.parseByte(keyArg);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Ключ повинен бути числом від -128 до 127.", e);
+        }
+
+        FileCypher.cypher(source, destination, key);
+        System.out.println("Файл успішно зашифровано та збережено у \"" + destination + "\".");
+    }
+
+    /**
+     * Виводить інструкції по використанню та завершує програму.
+     *
+     * @param errorMessage повідомлення про помилку
+     */
+    private static void printUsageAndExit(String errorMessage) {
+        System.err.println("Помилка: " + errorMessage);
+        System.err.println("Використання:");
+        System.err.println("  Для підрахунку слів:");
+        System.err.println("    java Main countWords <filename>");
+        System.err.println("  Для шифрування файлу:");
+        System.err.println("    java Main cypher <sourceFile> <destinationFile> <key>");
+        System.exit(1);
+    }
+}
